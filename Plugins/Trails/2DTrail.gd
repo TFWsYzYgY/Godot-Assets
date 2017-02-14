@@ -1,4 +1,4 @@
-
+tool
 extends Node2D
 
 export(Texture) var texture
@@ -6,7 +6,8 @@ export var flipH = false
 export var flipV = false
 
 
-export(Color) var color
+export(Color) var startColor = Color()
+export(Color) var endColor = Color()
 var instance = Polygon2D.new()
 
 export(bool) var emit = true
@@ -30,6 +31,7 @@ var optCount = 30
 var points = []
 var verts = []
 var uvs = []
+var colors = []
 var pairs = []
 var pointCount = 0 #just to make the lookup easier
 
@@ -40,6 +42,7 @@ class Point:
 	
 	var vectors = [Vector2(),Vector2()]
 	var uvs = [Vector2(),Vector2()]
+	var color = Color()
 
 	func set(tran = Matrix32()):
 		transform = Matrix32().translated(tran.get_origin())
@@ -81,6 +84,7 @@ func get_center():
 func updatePairs():
 	verts = []
 	uvs = []
+	colors = []
 	for i in range(0,pointCount-1):
 		var a = points[i]
 		var b = points[i+1]
@@ -88,22 +92,28 @@ func updatePairs():
 		#tri 1
 		verts.append(a.vectors[0])
 		uvs.append(a.uvs[0])
+		colors.append(a.color)
 		
 		verts.append(a.vectors[1])
 		uvs.append(a.uvs[1])
+		colors.append(a.color)
 		
 		verts.append(b.vectors[0])
 		uvs.append(b.uvs[0])
+		colors.append(b.color)
 		
 		
 		verts.append(a.vectors[1])
 		uvs.append(a.uvs[1])
+		colors.append(a.color)
 		
 		verts.append(b.vectors[1])
 		uvs.append(b.uvs[1])
+		colors.append(b.color)
 		
 		verts.append(b.vectors[0])
 		uvs.append(b.uvs[0])
+		colors.append(b.color)
 	
 func update_polygon(delta):
 	#emit
@@ -177,6 +187,7 @@ func update_polygon(delta):
 		var width = lerp(startWidth,endWidth,ratio)
 		
 		var uvRatio = (p.timeAlive - points[0].timeAlive)*uvMultiplier
+		var c = Color(startColor.to_html()).linear_interpolate(endColor,uvRatio)
 		
 		var _v = Vector2(0,width/2)
 		var t = p.transform
@@ -213,6 +224,7 @@ func update_polygon(delta):
 		
 		p.vectors = [v1,v2]
 		p.uvs = [uv1,uv2]
+		p.color = c
 		
 		
 	
@@ -223,7 +235,7 @@ func update_polygon(delta):
 	
 	instance.set_polygon(Vector2Array(verts))
 	instance.set_uv(Vector2Array(uvs))
-	instance.set_color(color)
+	instance.set_vertex_colors(colors)
 
 
 
